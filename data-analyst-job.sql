@@ -10,16 +10,19 @@ FROM data_analyst_jobs;
 --Q2)Write a query to look at just the first 10 rows. What company is associated with the job posting on the 10th row?
 SELECT company
 FROM data_analyst_jobs
-LIMIT 10 OFFSET 9;
+LIMIT 1 OFFSET 9;
 
 --Q3)How many postings are in Tennessee? 
-SELECT location,COUNT(*) AS Postings_Tennessee
-FROM title
+SELECT COUNT(*) AS Postings_Tennessee
+FROM data_analyst_jobs
 WHERE location = 'TN';
+--Answer: 21
+
 --How many are there in either Tennessee or Kentucky?
 SELECT COUNT(*) AS Posting_TennesseeORKentucky
 FROM data_analyst_jobs
 WHERE location IN ('TN' , 'KY');
+--Answer: 27
 
 --Q4)How many postings in Tennessee have a star rating above 4?
 SELECT location,star_rating,COUNT(*) AS Postingsrating4
@@ -62,7 +65,8 @@ WHERE location = 'CA';
 
 SELECT company,AVG(star_rating)
 FROM data_analyst_jobs
-GROUP BY company > 5000;
+GROUP BY company 
+HAVING SUM(review_count)> 5000;
 
 -- How many companies are there with more that 5000 reviews across all locations?
 SELECT company, SUM(review_count)
@@ -78,6 +82,14 @@ GROUP BY company
 HAVING SUM(review_count) > 5000
 ORDER BY Average_Start_Rating DESC;
 
+-- What is that rating?
+
+SELECT company, AVG(star_rating) AS Average_Start_Rating, SUM(review_count)
+FROM data_analyst_jobs
+GROUP BY company
+HAVING SUM(review_count) > 5000
+ORDER BY Average_Start_Rating DESC
+LIMIT 1;
 --Answer: Google company has the highest star rating 
 --        Rating is 4.3
 
@@ -111,5 +123,28 @@ FROM data_analyst_jobs
 WHERE skill LIKE '%SQL' AND days_since_posting >21)
 GROUP BY company;
 --Disregard any postings where the domain is NULL.
-
-
+SELECT days_since_posting, COUNT(*)
+FROM data_analyst_jobs
+WHERE days_since_posting IS NOT NULL
+GROUP BY days_since_posting;
+--Order your results so that the domain with the greatest number of hard to fill jobs is at the top.
+SELECT days_since_posting, COUNT(*) AS greater_jobs
+FROM data_analyst_jobs
+WHERE days_since_posting IS NOT NULL
+GROUP BY days_since_posting
+ORDER BY greater_jobs DESC;
+--Which three industries are in the top 4 on this list? 
+SELECT days_since_posting, COUNT(*) AS greater_jobs
+FROM data_analyst_jobs
+WHERE days_since_posting IS NOT NULL
+GROUP BY days_since_posting
+ORDER BY greater_jobs DESC
+LIMIT 4;
+--How many jobs have been listed for more than 3 weeks for each of the top 4?
+SELECT days_since_posting, COUNT(*) AS morethan_3weeks
+FROM data_analyst_jobs
+WHERE days_since_posting IS NOT NULL
+GROUP BY days_since_posting
+ORDER BY greater_jobs DESC
+LIMIT 4 AND IF DATED(CURRENT_DATE,days_since_posting)>21
+GROUP BY morethan_3weeks;
